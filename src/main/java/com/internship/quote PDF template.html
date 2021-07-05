@@ -1,0 +1,280 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" media="all" href="${ctx.cssPath}"></link>
+    <title>Quote / Proforma invoice</title>
+</head>
+<body>
+<div class="header">
+    <div class="pearson-banner">
+        <div class="container">
+            <div id="site-logo">
+                        <span>
+                            <img src="https://www.pearsonassessments.com/etc/themes/platform/1dc-theme/assets/pearson_logo_white_bg.svg" alt="Pearson logo" height="26" width="84" />
+                        </span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="section">
+        <h1 class="h2-plus">Quote / Proforma invoice</h1>
+        <table class="responsive-table details-table" width="100%">
+            <tr class="responsive-table-item">
+                <td width="25%">
+                    <span class="item-label">Quote number</span>
+                    <span class="item-value">${ctx.quoteData.code}</span>
+                </td>
+                <td width="25%">
+                    #set ($quoteCreationTime = $ctx.dateTool.format('MM/dd/yy h:mm a ', $ctx.quoteData.quoteCreationTime))
+                    <span class="item-label">Quote date</span>
+                    <span class="item-value">${quoteCreationTime}</span>
+                </td>
+                <td width="25%"></td>
+                <td width="25%"></td>
+            </tr>
+            <tr class="responsive-table-item">
+                <td>
+                    <span class="item-label">Status</span>
+                    <span class="item-value">${ctx.quoteData.quoteStateName}</span>
+                </td>
+                <td>
+                    #set($quoteExpirationTime = $ctx.dateTool.format('MM/dd/yy h:mm a ', $ctx.quoteData.expirationTime))
+                    <span class="item-label">Expiration date</span>
+                    <span class="item-value">${quoteExpirationTime}</span>
+                </td>
+                <td>
+                    <span class="item-label">Total</span>
+                    <span class="item-value">${ctx.quoteData.totalPriceWithTax.formattedValue}</span>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div class="section">
+        <h2 class="h4">Customer details</h4>
+            <table class="responsive-table details-table" width="100%">
+                <tr class="responsive-table-item">
+                    <td width="20%">
+                        <span>Billing address</span>
+                    </td>
+                    <td width="30%">
+                            <span>
+                                ${ctx.quoteData.billingAddress.formattedAddress}
+                            </span>
+                    </td>
+                    #if ( $ctx.quoteData.tepAccountNumber && $ctx.quoteData.tepAccountNumber != '')
+                    <td width="20%">
+                        <span>Account number</span>
+                    </td>
+                    <td width="30%">
+                        <span>${ctx.quoteData.tepAccountNumber}</span>
+                    </td>
+                    #end
+                </tr>
+                <tr class="responsive-table-item">
+                    <td>
+                        <span>Quote creator</span>
+                    </td>
+                    <td>
+                        #if($ctx.quoteData.billingAddress.title) ${ctx.quoteData.billingAddress.title} #end
+                        ${ctx.quoteData.billingAddress.firstName} ${ctx.quoteData.billingAddress.lastName}</span>
+                    </td>
+                    #if($ctx.quoteData.qualifiedUser && $ctx.quoteData.qualifiedUser != '' )
+                    <td>
+                        <span>Qualified user</span>
+                    </td>
+                    <td>
+                        <span>${ctx.quoteData.qualifiedUser}</span>
+                    </td>
+                    #end
+                </tr>
+            </table>
+    </div>
+    <div class="section">
+        <h2 class="h4">Shipping details</h4>
+            <table class="responsive-table details-table" width="100%">
+                <tr class="responsive-table-item">
+                    <td width="20%">
+                        <span>Ship to</span>
+                    </td>
+                    <td width="30%">
+                            <span>
+                                ${ctx.quoteData.deliveryAddress.formattedAddress}
+                            </span>
+                    </td>
+                    <td width="20%">
+                        <span>Ship by</span>
+                    </td>
+                    <td width="30%">
+                        <span>${ctx.quoteData.deliveryMode.name}</span>
+                    </td>
+                </tr>
+            </table>
+    </div>
+    <span class="prices-disclaimer">All prices quoted are in US Dollars</span>
+    <table class="responsive-table pricing-grid" width="100%">
+        <tr class="responsive-table-item">
+            <th width="5%">Line</th>
+            <th width="50%">Product</th>
+            <th width="5%"></th>
+            <th width="10%">List Price</th>
+            <th width="5%">Qty</th>
+            <th width="15%">Discount</th>
+            <th width="10%">Line Total</th>
+        </tr>
+        #foreach( $entry in ${ctx.quoteData.entries} )
+        <tr class="responsive-table-item">
+            <td>$velocityCount</td>
+            <td>$entry.product.code - $entry.product.name</td>
+            <td><span class="quals-badge">$entry.product.qualificationLevel</span></td>
+            <td>$entry.basePrice.formattedValue</td>
+            <td>$entry.quantity</td>
+            #if($entry.discount && $entry.discount.value > 0)<td>-$entry.discount</td>
+            #else <td>  </td>
+            #end
+            <td>$entry.totalPrice.formattedValue</td>
+        </tr>
+        #end
+    </table>
+    <div class="section">
+        <div class="quote-totals">
+            #set ($vertexTaxCalculationTimeout = $ctx.quoteData.vertexTaxCalculationTimeout)
+            <table class="responsive-table" width="100%">
+                <tr class="responsive-table-item">
+                    <td>
+                        Subtotal
+                    </td>
+                    <td>
+                        ${ctx.quoteData.subTotal.formattedValue}
+                    </td>
+                </tr>
+                #if ($ctx.quoteData.totalDiscounts && $ctx.quoteData.totalDiscounts.value > 0 )
+                <tr class="responsive-table-item">
+                    <td>
+                        Discounts
+                    </td>
+                    <td>
+                        -${ctx.quoteData.totalDiscounts.formattedValue}
+                    </td>
+                </tr>
+                #end
+                <tr class="responsive-table-item">
+                    <td>
+                        Shipping & handling
+                    </td>
+                    <td>
+                        ${ctx.quoteData.deliveryCost.formattedValue}
+                    </td>
+                </tr>
+                <tr class="responsive-table-item">
+                    <td>
+                        #if( $vertexTaxCalculationTimeout )
+                        Estimated tax:
+                        #else
+                        Tax:
+                        #end
+                    </td>
+                    <td>
+                        ${ctx.quoteData.totalTax.formattedValue}
+                    </td>
+                </tr>
+            </table>
+            #if( $vertexTaxCalculationTimeout )
+            <div class="taxLabelContent">
+                <div class="content taxLabelContent--inner clear">
+                    <p style="margin: 0;color: #003057;">This is an estimation only. Your invoice will include the final tax amount</p>
+                </div>
+            </div>
+            #elseif( $ctx.quoteData.totalTax && $ctx.quoteData.totalTax.value > 0 )
+            <div class="taxLabelContent" >
+                <div class="content taxLabelContent--inner clear">
+                    <p style="margin: 0;color: #003057;"><strong>PLEASE NOTE</strong>: You are being charged tax. If this is incorrect, please see our guide to requesting tax exemption.</p>
+                </div>
+            </div>
+            #else
+            #if( $ctx.quoteData.unitClassCode == 'SCHO' || $ctx.quoteData.unitClassCode == 'FGOV' || $ctx.quoteData.unitClassCode == 'SGOV' )
+            <div class="content taxLabelContent">
+                <div class="taxLabelContent--inner clear">
+                    <p style="margin: 0;color: #003057;">Your organization has a tax exempt status, so tax is not being charged on this order.</p>
+                </div>
+            </div>
+            #end
+            #end
+            <div class="quote-total">
+                <table class="responsive-table" width="100%">
+                    <tr class="responsive-table-item">
+                        <td>
+                            <strong>Total</strong>
+                        </td>
+                        <td>
+                            <strong>${ctx.quoteData.totalPriceWithTax.formattedValue}</strong>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        #foreach( $promotion in ${ctx.quoteData.appliedPromotions} )
+        <p>$promotion.title has been applied</p>
+        <p>Promotion expiration date
+            #set ($promotionEndDate = $ctx.dateTool.format('MM/dd/yy h:mm a ', $promotion.endDate))
+            <span>${promotionEndDate}</span></p>
+        #end
+        <p><strong>Payment terms: Net ${ctx.paymentTerms} days</strong></p>
+        <p class="small">
+            Pearson Assessment<br />
+            PO Box 599700<br />
+            San Antonio, TX, 78529<br />
+            Phone: 800-627-7271<br />
+            Federal ID No: 41-0850527
+        </p>
+        <div class="section">
+            <div>
+                <h2><b>All Quotes/Purchases are subject to Pearson's:</b></h2>
+                <ul>
+                    <li><a href="https://www.pearsonassessments.com/footer/pearson-clinical-privacy-policy.html">Clinical Privacy Policy</a></li>
+                    <li><a href="https://www.pearsonassessments.com/footer/permissions---licensing.html">Clinical Permissions & Licencing</a></li>
+                    <li><a href="https://www.pearsonassessments.com/footer/terms-of-sale---use.html">Clinical Terms of Sale & Use</a></li>
+                    <li><a href="https://www.pearsonassessments.com/footer/legal-policies.html">Clinical Legal Policies</a></li>
+                </ul>
+            </div><br>
+            <div>
+                <h2><b>Quote Expiration</b></h2>
+                <p>Your quote is valid for a maximum of 60 days from the date it is created unless it fits one of these scenarios:</p><br>
+                <ol>
+                    <li>A promo code used for the quote expires before the 60 day time period ends. In this case, the quote would expire on the promo code end date.</li>
+                    <li>Quotes created in November/ December will expire December 31 due to pricing updates made annually on January 1.</li>
+                </ol>
+            </div><br>
+            <div>
+                <h2><b>To complete your order</b></h2>
+                <h2><b>Online order (recommended)</b></h2>
+                <p> To finalize your order online:</p>
+                <ol>
+                    <li><a href="https://www.pearsonassessments.com/store/usassessments/en/login">Sign in</a></li>
+                    <li>Select either My Account or the Organizational Account you created the quote/are ordering on behalf of</li>
+                    <li>Click on My Account or the Organization Account title in the top right navigation</li>
+                    <li>In the additional navigation box that opens click the quote link</li>
+                    <li>Open the quote you’d like to check out with.</li>
+                    <li>Option: You may also access your quote through the quote link provided in the email you received after saving a quote.</li>
+
+                    <li>When you are in the quote, review your order, then click the ‘Order from Quote’ button to begin checkout.</li>
+                </ol>
+            </div><br>
+            <div>
+                <h2><b>Webform order</b></h2>
+                <p>If you already have a Pearson account (non-website account for which you have an account number) and would like to use a purchase order, you may order directly via <a href="https://support.pearson.com/usclinical/s/ClinicalProductSupportForm">webform</a>. Please complete the form information and attach the purchase order PDF. Enter the quote number in the notes field. The quote number can be found on the quote PDF you received via email or online. You will receive an order case number and email confirmation when your order has been received.</p>
+            </div><br>
+            <div>
+                <h2><b>Phone Order</b></h2>
+                <p>Call us at 800-627-7271 to place your order. Provide your quote number from the Quote PDF to the Customer Support Agent. You may pay by credit card or purchase order.</p>
+            </div>
+        </div><br>
+        <div>
+            <h2><b>Fax Order</b></h2>
+            <p>Download and complete the fax order checklist. Fax this quote PDF, the PO, and the completed <a href="https://www.pearsonassessments.com/content/dam/school/global/clinical/us/assets/ordering/fax-checklist.pdf">fax order checklist</a> to 800-232-1223. Faxed orders may take up to 2 additional business days to process. For fastest processing, please use the online or webform ordering methods.</p>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>
